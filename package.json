@@ -1,0 +1,22 @@
+{
+  "name": "siata-calidad-aire-valle-aburra",
+  "version": "1.0.0",
+  "description": "AeroSIATA - Sistema de Monitoreo de Calidad del Aire (ICA) y Apoyo a Decisiones en Salud y Movilidad en el Valle de Aburrá",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "siata",
+    "calidad-del-aire",
+    "pm25",
+    "ica",
+    "medellin",
+    "valle-de-aburra",
+    "leaflet",
+    "analisis-prescriptivo"
+  ],
+  "author": "SIATA Analytics Team",
+  "license": "ISC"
+}

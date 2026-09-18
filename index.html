@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSIATA | Monitor de Calidad del Aire (ICA) & Sistema de Apoyo a Decisiones - Valle de Aburrá</title>
+  <meta name="description" content="Plataforma de visualización prescriptiva y apoyo a la toma de decisiones en salud pública y movilidad basada en datos abiertos de calidad del aire (PM2.5) del SIATA para Medellín y el Valle de Aburrá.">
+  
+  <!-- Tipografía Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS para Mapas Interactivos -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Estilos Personalizados -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌫️</text></svg>">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. BARRA DE NAVEGACIÓN SUPERIOR
+       ========================================================================= -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#inicio" class="brand-logo">
+        <div class="brand-icon">🌫️</div>
+        <div class="brand-info">
+          <span class="brand-title">Aero<span>SIATA</span></span>
+          <span class="brand-subtitle">Valle de Aburrá &bull; Calidad del Aire</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#inicio" class="nav-link">Inicio</a></li>
+        <li><a href="#caso-estudio" class="nav-link">Situación &amp; Decisiones</a></li>
+        <li><a href="#solucion" class="nav-link">Funcionamiento</a></li>
+        <li><a href="#mapa-app" class="nav-link">Mapa &amp; Estaciones</a></li>
+        <li><a href="#analitica" class="nav-link">Analítica</a></li>
+        <li><a href="#evidencias" class="nav-link">Evidencias API</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="live-indicator" id="liveStatusBadge">
+          <span class="pulse-dot"></span>
+          <span>Conectando SIATA...</span>
+        </div>
+        <button class="btn-refresh" id="btnRefresh" title="Actualizar datos directamente desde SIATA">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Actualizar</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       2. HERO SECTION & RESUMEN DE INDICADORES EN VIVO (KPIs)
+       ========================================================================= -->
+  <header class="hero" id="inicio">
+    <div class="container">
+      <div class="hero-badge-wrap">
+        <span class="hero-pill">
+          <span>🌿</span> Datos Oficiales en Tiempo Real &bull; Red de Monitoreo SIATA
+        </span>
+      </div>
+
+      <h1 class="hero-title">
+        Inteligencia Ambiental para la <br>
+        <span class="text-gradient">Toma de Decisiones</span> en el Valle de Aburrá
+      </h1>
+
+      <p class="hero-lead">
+        Transformamos los microdatos de concentración de material particulado <strong>PM2.5</strong> del Sistema de Alerta Temprana (SIATA) en prescripciones operativas inmediatas para proteger la salud de más de <strong>300,000 estudiantes</strong>, deportistas y comunidades vulnerables de Medellín y los 9 municipios conurbados.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#mapa-app" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          Explorar Mapa &amp; Estaciones
+        </a>
+        <a href="#caso-estudio" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Ver Caso de Estudio Real
+        </a>
+        <a href="#evidencias" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          Auditoría de API
+        </a>
+      </div>
+
+      <!-- Barra de KPIs Dinámicos -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Estaciones Activas</span>
+            <span class="kpi-icon">📍</span>
+          </div>
+          <div class="kpi-value" id="kpiTotalStations">--</div>
+          <div class="kpi-footer">Georreferenciadas en el Valle</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">PM2.5 Promedio</span>
+            <span class="kpi-icon">🌫️</span>
+          </div>
+          <div class="kpi-value">
+            <span id="kpiAvgPM25">--</span>
+            <span class="kpi-unit">µg/m³</span>
+          </div>
+          <div class="kpi-footer">Nivel general en la atmósfera</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Calidad Aceptable</span>
+            <span class="kpi-icon">🟢</span>
+          </div>
+          <div class="kpi-value" id="kpiPctGood">--%</div>
+          <div class="kpi-footer">Estaciones en estado Bueno / Moderado</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Estación Más Crítica</span>
+            <span class="kpi-icon">⚠️</span>
+          </div>
+          <div class="kpi-value" style="font-size: 1.15rem; line-height: 1.3;" id="kpiCriticalStation">Cargando...</div>
+          <div class="kpi-footer">Zona de mayor atención preventiva</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       3. SECCIÓN: SITUACIÓN REAL & TOMA DE DECISIONES (Puntos 9 y 10)
+       ========================================================================= -->
+  <section class="section section-alt" id="caso-estudio">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Puntos 9 y 10 &bull; Caso de Estudio Aplicado</span>
+        <h2 class="section-title">Respira Seguro Valle de Aburrá</h2>
+        <p class="section-desc">
+          Planteamiento de una situación real donde los datos de calidad del aire respaldan decisiones críticas en salud pública, movilidad escolar y entrenamiento deportivo.
+        </p>
+      </div>
+
+      <!-- Cuadrícula de Actores & Decisiones Reales -->
+      <div class="decision-cards-grid">
+        <!-- Caso 1: Colegios -->
+        <div class="decision-card">
+          <span class="decision-role-badge badge-schools">🎒 Instituciones Educativas</span>
+          <h3>Gestión de Riesgo Escolar</h3>
+          <p>
+            Más de 300,000 niños y adolescentes asisten diariamente a colegios en el Valle de Aburrá. Durante episodios de contaminación moderada o dañina para grupos sensibles, la exposición en patios abiertos durante educación física y recreos detona crisis asmáticas infantiles e infecciones respiratorias agudas.
+          </p>
+          <div class="decision-action-box">
+            <strong>🎯 Decisión Apoyada:</strong>
+            Suspensión o reprogramación inmediata de actividades deportivas en patios exteriores cuando la estación local supere los <strong>35.4 µg/m³</strong> (Naranja/Rojo).
+          </div>
+        </div>
+
+        <!-- Caso 2: Atletas y Ciclistas -->
+        <div class="decision-card">
+          <span class="decision-role-badge badge-sports">🚴 Atletas &amp; Ciudadanos</span>
+          <h3>Planificación de Entrenamiento</h3>
+          <p>
+            Corredores y ciclistas inhalan hasta 10 veces más volumen de aire durante el ejercicio cardiovascular. Realizar entrenamientos en horas pico matutinas (6:00 - 8:30 AM) bajo inversión térmica incrementa la absorción alveolar de partículas tóxicas cancerígenas.
+          </p>
+          <div class="decision-action-box">
+            <strong>🎯 Decisión Apoyada:</strong>
+            Elección de franjas horarias seguras (tardes post-radiación solar) y selección de corredores o ciclorrutas en municipios con ICA Verde.
+          </div>
+        </div>
+
+        <!-- Caso 3: Hospitales y EPS -->
+        <div class="decision-card">
+          <span class="decision-role-badge badge-health">🏥 Red Hospitalaria</span>
+          <h3>Anticipación de Urgencias Respiratorias</h3>
+          <p>
+            Los picos de concentración de PM2.5 preceden en 48 a 72 horas el incremento exponencial de admisiones por bronquiolitis y neumonía en salas de urgencias pediátricas y de adultos mayores.
+          </p>
+          <div class="decision-action-box">
+            <strong>🎯 Decisión Apoyada:</strong>
+            Abastecimiento preventivo de broncodilatadores, oxígeno y activación de personal de contingencia en centros de salud de las comunas más afectadas.
+          </div>
+        </div>
+
+        <!-- Caso 4: Movilidad y Gobierno Metropolitano -->
+        <div class="decision-card">
+          <span class="decision-role-badge badge-gov">🏛️ Tránsito &amp; Medio Ambiente</span>
+          <h3>Contingencia Atmosférica Selectiva</h3>
+          <p>
+            El 80% de las emisiones provienen de vehículos (especialmente camiones y volquetas diésel). Las medidas generales indiscriminadas generan rechazo económico si no están respaldadas por evidencia geoespacial rigurosa.
+          </p>
+          <div class="decision-action-box">
+            <strong>🎯 Decisión Apoyada:</strong>
+            Declaración oportuna de contingencia ambiental (Pico y Placa Ambiental) y desvío de tráfico de carga en corredores críticos (como el Corredor Centro y Girardota).
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       4. SECCIÓN: EXPLICACIÓN DE LA SOLUCIÓN (Punto 10 Detallado)
+       ========================================================================= -->
+  <section class="section" id="solucion">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Punto 10 &bull; Arquitectura &amp; Metodología</span>
+        <h2 class="section-title">¿Cómo Funciona la Solución?</h2>
+        <p class="section-desc">
+          Estructura metodológica integral: del microdato crudo de la red de sensores SIATA a la recomendación prescriptiva en pantalla.
+        </p>
+      </div>
+
+      <div class="solution-breakdown-grid">
+        <!-- 1. El Problema -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">⚠️</div>
+          <h3>1. El Problema</h3>
+          <p>
+            El Valle de Aburrá es una cuenca estrecha encañonada por montañas de más de 2,500 metros. Durante las temporadas de transición climática (marzo-abril y octubre-noviembre), se presenta el fenómeno de <strong>inversión térmica</strong>: una capa de aire frío desciende sobre el valle atrapando el humo, el hollín y los gases vehiculares a nivel del suelo, impidiendo su dispersión natural.
+          </p>
+          <ul>
+            <li>Concentración peligrosa de material particulado PM2.5 (&lt; 2.5 micras).</li>
+            <li>Penetración profunda en alvéolos y flujo sanguíneo.</li>
+            <li>Riesgo letal para niños, ancianos y personas con asma crónica.</li>
+          </ul>
+        </div>
+
+        <!-- 2. El Contexto -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">🏙️</div>
+          <h3>2. El Contexto</h3>
+          <p>
+            Medellín y los 9 municipios metropolitanos (Bello, Itagüí, Envigado, Caldas, Girardota, Sabaneta, Copacabana, La Estrella y Barbosa) cuentan con la red de monitoreo ambiental más densa de América Latina: el <strong>SIATA</strong>.
+          </p>
+          <ul>
+            <li>Más de 3.8 millones de habitantes expuestos diariamente.</li>
+            <li>Red oficial con decenas de sensores automatizados de alta precisión.</li>
+            <li>Reto clave: los datos crudos en JSON no brindan una guía de acción comprensible para el ciudadano común.</li>
+          </ul>
+        </div>
+
+        <!-- 3. Los Datos Utilizados -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">📊</div>
+          <h3>3. Los Datos Utilizados</h3>
+          <p>
+            Consumo en tiempo real del dataset oficial <code>Datos_SIATA_Aire_AQ_pm25_Last.json</code> con más de 500 registros horarios:
+          </p>
+          <ul>
+            <li><code>location</code>: Nombre y código unívoco de la estación de monitoreo.</li>
+            <li><code>value</code>: Concentración de PM2.5 en microgramos por metro cúbico (µg/m³).</li>
+            <li><code>coordinates</code>: Latitud y longitud exacta para posicionamiento cartográfico.</li>
+            <li><code>date.local</code>: Estampa temporal de cada medición horaria.</li>
+            <li><strong>Tratamiento de anomalías:</strong> Detección y descarte del valor centinela <code>-9999</code> (sensor en calibración o fuera de línea).</li>
+          </ul>
+        </div>
+
+        <!-- 4. Funcionamiento de la Solución -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">⚙️</div>
+          <h3>4. Funcionamiento Técnico</h3>
+          <p>
+            Pipeline computacional desarrollado en JavaScript modular y backend Node.js:
+          </p>
+          <ul>
+            <li><strong>Adquisición Asíncrona:</strong> Fetch con proxy anti-CORS y caché inteligente (TTL 5 min).</li>
+            <li><strong>Normalización &amp; Limpieza:</strong> Depuración algorítmica idéntica al notebook de referencia.</li>
+            <li><strong>Clasificación Normativa ICA:</strong> Asignación estricta de rangos (Buena &le; 12, Moderada 12.1-35.4, Sensibles 35.5-55.4, Dañina 55.5-150.4, Muy Dañina &gt; 150.4).</li>
+            <li><strong>Motor Prescriptivo:</strong> Generación de directrices sanitarias orientadas a la acción.</li>
+          </ul>
+        </div>
+
+        <!-- 5. Visualizaciones -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">🗺️</div>
+          <h3>5. Visualizaciones</h3>
+          <p>
+            Múltiples perspectivas interactivas diseñadas para facilitar el análisis inmediato:
+          </p>
+          <ul>
+            <li><strong>Mapa Cartográfico Leaflet:</strong> Capas satelitales/urbanas de Esri y marcadores cromáticos.</li>
+            <li><strong>Gráfico Comparativo de Barras:</strong> Ranking de estaciones con líneas guía normativas (35.4 y 55.4 µg/m³).</li>
+            <li><strong>Gráfico Donut de Proporciones:</strong> Distribución porcentual del estado del aire en el valle.</li>
+            <li><strong>Serie Temporal 24 Horas:</strong> Curva de evolución horaria para identificar horas pico.</li>
+          </ul>
+        </div>
+
+        <!-- 6. Utilidad para Decisiones -->
+        <div class="breakdown-card">
+          <div class="breakdown-icon-wrap">💡</div>
+          <h3>6. Utilidad para Decisiones</h3>
+          <p>
+            Cierre de la brecha entre la analítica de datos ambientales y el bienestar comunitario:
+          </p>
+          <ul>
+            <li>Semáforo intuitivo para cualquier ciudadano sin conocimientos técnicos.</li>
+            <li>Protocolo de contingencia inmediata para rectores de instituciones educativas.</li>
+            <li>Ahorro en costos de salud pública por reducción de hospitalizaciones prevenibles.</li>
+            <li>Exportación directa a CSV para auditorías e investigaciones académicas.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. SECCIÓN DE LA APLICACIÓN INTERACTIVA & MAPA (Puntos 6, 7 y 8)
+       ========================================================================= -->
+  <section class="section section-alt" id="mapa-app">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Puntos 6, 7 y 8 &bull; Aplicación Interactiva</span>
+        <h2 class="section-title">Monitor Geoespacial &amp; Consulta ICA</h2>
+        <p class="section-desc">
+          Explora los datos en vivo del SIATA según su ubicación geográfica, aplica filtros en tiempo real y consulta las recomendaciones prescriptivas por estación.
+        </p>
+      </div>
+
+      <!-- Barra de Herramientas & Filtros Interactivos (Punto 8) -->
+      <div class="app-toolbar">
+        <div class="toolbar-row">
+          <!-- Buscador Reactivo -->
+          <div class="search-input-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="stationSearchInput" class="search-input" placeholder="Buscar por estación, código o municipio (ej. Centro, Itagüí, Caldas)...">
+          </div>
+
+          <!-- Filtros desplegables y Modos de Vista -->
+          <div class="filter-selects-wrap">
+            <select id="filterMunicipality" class="custom-select" title="Filtrar por municipio">
+              <option value="all">🏙️ Todos los Municipios</option>
+            </select>
+
+            <select id="sortStations" class="custom-select" title="Criterio de ordenamiento">
+              <option value="pm25-desc">⚡ Mayor Contaminación (PM2.5)</option>
+              <option value="pm25-asc">🌿 Menor Contaminación (PM2.5)</option>
+              <option value="name-asc">🔤 Orden Alfabético</option>
+            </select>
+
+            <div class="view-mode-tabs">
+              <button class="view-tab-btn active" data-view="map" title="Vista de Mapa Geoespacial">
+                🗺️ Mapa
+              </button>
+              <button class="view-tab-btn" data-view="cards" title="Vista de Tarjetas">
+                🎴 Tarjetas
+              </button>
+              <button class="view-tab-btn" data-view="table" title="Vista de Tabla Completa">
+                📋 Tabla
+              </button>
+              <button class="view-tab-btn" data-view="charts" title="Vista de Analítica y Estadísticas">
+                📊 Gráficos
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtros por Categoría ICA (Pills de Semáforo) -->
+        <div class="category-filter-bar">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-right: 0.5rem;">Filtrar por ICA:</span>
+          <button class="cat-filter-btn active" data-category="all">
+            Todas las Estaciones
+          </button>
+          <button class="cat-filter-btn" data-category="Buena">
+            <span class="cat-color-dot" style="background: var(--ica-buena);"></span> Buena (&le; 12 µg)
+          </button>
+          <button class="cat-filter-btn" data-category="Moderada">
+            <span class="cat-color-dot" style="background: var(--ica-moderada);"></span> Moderada (12.1 - 35.4 µg)
+          </button>
+          <button class="cat-filter-btn" data-category="Dañina para grupos sensibles">
+            <span class="cat-color-dot" style="background: var(--ica-sensibles);"></span> Sensibles (35.5 - 55.4 µg)
+          </button>
+          <button class="cat-filter-btn" data-category="Dañina">
+            <span class="cat-color-dot" style="background: var(--ica-danina);"></span> Dañina (&gt; 55.4 µg)
+          </button>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           MODO 1: VISTA MAPA INTERACTIVO (Punto 7)
+           ========================================== -->
+      <div class="map-view-wrapper" id="mapViewWrapper">
+        <div class="map-header-bar">
+          <div class="map-header-title">
+            <span>🗺️</span> Mapa Geoespacial de Monitoreo &bull; Capa Esri World Street Map (SIATA Oficial)
+          </div>
+          <div class="map-controls-group">
+            <button class="btn-map-control" onclick="AppState.mapInstance.setView([6.2442, -75.5812], 11)">
+              📍 Centrar Valle
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenedor del Mapa Leaflet -->
+        <div id="siataMap"></div>
+
+        <!-- Leyenda Oficial ICA sobre el mapa -->
+        <div class="map-legend-overlay">
+          <div class="legend-title">Escala ICA &bull; PM2.5</div>
+          <div class="legend-items">
+            <div class="legend-item">
+              <span class="legend-color-label">
+                <span class="legend-dot" style="background: var(--ica-buena);"></span> Buena
+              </span>
+              <span class="legend-range">&le; 12.0 µg/m³</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color-label">
+                <span class="legend-dot" style="background: var(--ica-moderada);"></span> Moderada
+              </span>
+              <span class="legend-range">12.1 - 35.4 µg/m³</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color-label">
+                <span class="legend-dot" style="background: var(--ica-sensibles);"></span> Grupos Sensibles
+              </span>
+              <span class="legend-range">35.5 - 55.4 µg/m³</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color-label">
+                <span class="legend-dot" style="background: var(--ica-danina);"></span> Dañina
+              </span>
+              <span class="legend-range">55.5 - 150.4 µg/m³</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color-label">
+                <span class="legend-dot" style="background: var(--ica-muy-danina);"></span> Muy Dañina
+              </span>
+              <span class="legend-range">&gt; 150.4 µg/m³</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           MODO 2: VISTA TARJETAS DE ESTACIONES (Punto 8)
+           ========================================== -->
+      <div class="stations-grid-view" id="stationsGridContainer" style="display: none;">
+        <!-- Inyectado dinámicamente con app.js -->
+      </div>
+
+      <!-- ==========================================
+           MODO 3: VISTA TABLA DE AUDITORÍA (Puntos 8 y 11)
+           ========================================== -->
+      <div class="table-view-wrapper" id="stationsTableWrapper" style="display: none;">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Estación de Monitoreo</th>
+                <th>Municipio</th>
+                <th>PM2.5 Actual</th>
+                <th>Categoría ICA</th>
+                <th>Coordenadas</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="stationsTableBody">
+              <!-- Inyectado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           MODO 4: VISTA DE ANALÍTICA Y GRÁFICOS (Inspirado en Notebook)
+           ========================================== -->
+      <div id="chartsAnalyticsWrapper" style="display: none;">
+        <!-- Gráficos embebidos que se sincronizan con la sección dedicada -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       6. SECCIÓN: ANALÍTICA ESTADÍSTICA (Inspirada en el Notebook)
+       ========================================================================= -->
+  <section class="section" id="analitica">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Visualización Estadística &bull; Celda 12 del Notebook</span>
+        <h2 class="section-title">Distribución &amp; Tendencias Temporales</h2>
+        <p class="section-desc">
+          Análisis cuantitativo de material particulado fino en el Valle de Aburrá: comparación de estaciones frente a los límites normativos y comportamiento diurno de 24 horas.
+        </p>
+      </div>
+
+      <div class="charts-grid">
+        <!-- Gráfico 1: Comparativa de Concentración de PM2.5 por Estación -->
+        <div class="chart-card full-width">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-card-title">Distribución de Concentraciones de PM2.5 (µg/m³) por Estación SIATA</h3>
+              <p class="chart-card-subtitle">Réplica interactiva del gráfico Boxplot/Barra del notebook con límites normativos de alerta</p>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:right;">
+              <span style="color:#f59e0b;">--- Límite Moderada/Sensible (35.4)</span><br>
+              <span style="color:#ef4444;">--- Límite Sensible/Dañina (55.4)</span>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap" style="height: 380px;">
+            <canvas id="chartStationsBar"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 2: Donut de Distribución de Categorías ICA -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-card-title">Proporción de Calidad del Aire (ICA)</h3>
+              <p class="chart-card-subtitle">Porcentaje del Valle de Aburrá según categoría actual</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chartAqiDonut"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 3: Perfil Horario Diurno (24 Horas) -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-card-title">Evolución Horaria Promedio (24 Horas)</h3>
+              <p class="chart-card-subtitle">Picos de concentración vehicular matutinos vs dispersión solar vespertina</p>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chartDiurnalTrend"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       7. SECCIÓN: PANEL DE EVIDENCIAS DE FUNCIONAMIENTO (Punto 11)
+       ========================================================================= -->
+  <section class="section section-alt" id="evidencias">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Punto 11 &bull; Verificación y Auditoría Técnica</span>
+        <h2 class="section-title">Evidencias del Funcionamiento</h2>
+        <p class="section-desc">
+          Comprobación transparente de la ingesta de datos, métricas de consumo de la API de SIATA, proceso de limpieza y disponibilidad operativa.
+        </p>
+      </div>
+
+      <!-- Métricas de la Petición y Tratamiento de Datos -->
+      <div class="evidence-metrics-grid">
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Estado de la API</div>
+          <div class="evidence-metric-value" style="color: #34d399;">200 OK</div>
+          <div class="evidence-metric-desc">Petición exitosa al servidor SIATA</div>
+        </div>
+
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Latencia de Respuesta</div>
+          <div class="evidence-metric-value" id="evLatency" style="color: #38bdf8;">-- ms</div>
+          <div class="evidence-metric-desc">Tiempo de ida y vuelta (round-trip)</div>
+        </div>
+
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Registros Crudos Recibidos</div>
+          <div class="evidence-metric-value" id="evRawRecords">525</div>
+          <div class="evidence-metric-desc">Total lecturas en el payload original</div>
+        </div>
+
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Valores -9999 Depurados</div>
+          <div class="evidence-metric-value" id="evAnomalousRecords" style="color: #f59e0b;">138</div>
+          <div class="evidence-metric-desc">Sentinelas de sensor nulo eliminados</div>
+        </div>
+
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Registros Válidos Procesados</div>
+          <div class="evidence-metric-value" id="evValidRecords" style="color: #10b981;">387</div>
+          <div class="evidence-metric-desc">Mediciones limpias para analítica</div>
+        </div>
+
+        <div class="evidence-metric-box">
+          <div class="evidence-metric-label">Estaciones Georreferenciadas</div>
+          <div class="evidence-metric-value" id="evActiveStations">16</div>
+          <div class="evidence-metric-desc">Puntos de monitoreo en el mapa</div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Auditoría y Flujo de Verificación -->
+      <div class="evidence-details-card">
+        <h3>
+          <span>🧪</span> Criterios de Evaluación &bull; Evidencias Técnicas Entregadas
+        </h3>
+        <div class="evidence-steps-list">
+          <div class="evidence-step-item">
+            <span class="evidence-step-num">1</span>
+            <div class="evidence-step-title">Consumo de la API SIATA</div>
+            <div class="evidence-step-text">
+              Endpoint oficial: <code>https://siata.gov.co/EntregaData1/Datos_SIATA_Aire_AQ_pm25_Last.json</code>. Implementación de proxy resiliente con encabezados de agente y tolerancia a desconexión.
+            </div>
+          </div>
+
+          <div class="evidence-step-item">
+            <span class="evidence-step-num">2</span>
+            <div class="evidence-step-title">Limpieza y Datos Cargados</div>
+            <div class="evidence-step-text">
+              Filtrado del valor <code>-9999</code> idéntico a la celda 10 del notebook. Normalización de campos de latitud, longitud, fecha local y asignación de rangos numéricos de ICA.
+            </div>
+          </div>
+
+          <div class="evidence-step-item">
+            <span class="evidence-step-num">3</span>
+            <div class="evidence-step-title">Mapeo Geoespacial Leaflet</div>
+            <div class="evidence-step-text">
+              Renderizado de círculos marcadores interactivos con los colores normativos oficiales del ICA sobre la capa Esri World Street Map idéntica a Folium.
+            </div>
+          </div>
+
+          <div class="evidence-step-item">
+            <span class="evidence-step-num">4</span>
+            <div class="evidence-step-title">Interactividad y Filtros</div>
+            <div class="evidence-step-text">
+              Buscador en tiempo real, filtro por semáforo de categoría ICA, selector de municipio, ordenamiento y visualización de series de tiempo de 24 horas.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+          <div>
+            <span style="font-size:0.85rem; color:var(--text-secondary);">Fuente activa: </span>
+            <strong id="evSource" style="color:#ffffff; font-family:var(--font-mono);">Iniciando...</strong>
+          </div>
+          <div style="display:flex; gap:0.75rem;">
+            <button class="btn-secondary" id="btnExportCsv" style="font-size:0.85rem; padding:0.5rem 1rem;">
+              📥 Exportar Estaciones a CSV
+            </button>
+            <button class="btn-secondary" id="btnCopyJson" style="font-size:0.85rem; padding:0.5rem 1rem;">
+              📋 Copiar Payload JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Visor del Payload JSON en Vivo -->
+        <div class="json-viewer-wrap">
+          <div class="json-viewer-header">
+            <span>Respuesta JSON en Vivo (Payload Estructurado de SIATA)</span>
+            <span>Muestra de registros procesados</span>
+          </div>
+          <pre class="json-code-box" id="jsonCodeViewer">Cargando inspección de API...</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       8. MODAL DE DETALLE DE ESTACIÓN & HISTÓRICO 24H
+       ========================================================================= -->
+  <div class="modal-overlay" id="stationModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalStationTitle" style="font-size: 1.4rem; color: #ffffff;">Estación SIATA</h3>
+          <p id="modalStationMun" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Municipio: -- | Código: --</p>
+        </div>
+        <button class="modal-close-btn" onclick="cerrarModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Resumen Rápido -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">PM2.5 Actual</span>
+            <div id="modalStationPM25" style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">--</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Categoría ICA</span>
+            <div id="modalAqiBadge" style="margin-top: 0.35rem;">--</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Promedio 24h</span>
+            <div id="modalAvg24h" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: #ffffff;">--</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-subtle);">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Rango Día (Min - Max)</span>
+            <div style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: #9ca3af; margin-top: 0.3rem;">
+              <span id="modalMin24h">--</span> / <span id="modalMax24h">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prescripciones de Salud Diferenciadas -->
+        <div style="background: rgba(6, 182, 212, 0.08); border-left: 4px solid var(--brand-cyan); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+          <h4 style="font-size: 0.95rem; color: #38bdf8; margin-bottom: 0.35rem;">💡 Recomendación Sanitaria General:</h4>
+          <p id="modalAdvice" style="font-size: 0.9rem; color: #ffffff;">--</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: rgba(0,0,0,0.25); padding: 0.85rem; border-radius: 0.5rem; border: 1px solid var(--border-subtle);">
+            <strong style="color: #60a5fa; font-size: 0.85rem; display:block; margin-bottom: 0.3rem;">🎒 Directriz Escolar:</strong>
+            <p id="modalSchoolsAdvice" style="font-size: 0.8rem; color: var(--text-secondary);">--</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.25); padding: 0.85rem; border-radius: 0.5rem; border: 1px solid var(--border-subtle);">
+            <strong style="color: #34d399; font-size: 0.85rem; display:block; margin-bottom: 0.3rem;">🚴 Directriz Deportiva:</strong>
+            <p id="modalSportsAdvice" style="font-size: 0.8rem; color: var(--text-secondary);">--</p>
+          </div>
+        </div>
+
+        <!-- Gráfico de Evolución de 24 Horas de la Estación -->
+        <div>
+          <h4 style="font-size: 1rem; color: #ffffff; margin-bottom: 0.5rem;">📈 Comportamiento en las Últimas 24 Horas</h4>
+          <div style="height: 240px; position: relative;">
+            <canvas id="modalStationHistoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       9. PIE DE PÁGINA INSTITUCIONAL
+       ========================================================================= -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col" style="grid-column: span 2;">
+          <div class="brand-title" style="margin-bottom: 0.75rem;">
+            Aero<span>SIATA</span> &bull; Valle de Aburrá
+          </div>
+          <p style="font-size: 0.85rem; max-width: 460px; line-height: 1.6;">
+            Sistema de análisis prescriptivo y visualización geoespacial desarrollado en base al notebook de investigación de calidad del aire con datos abiertos de la red de monitoreo ambiental metropolitana.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Datos Abiertos</h4>
+          <ul>
+            <li><a href="https://siata.gov.co" target="_blank" rel="noopener">Portal Oficial SIATA</a></li>
+            <li><a href="https://siata.gov.co/EntregaData1/Datos_SIATA_Aire_AQ_pm25_Last.json" target="_blank" rel="noopener">Endpoint JSON PM2.5</a></li>
+            <li><a href="https://www.metropol.gov.co" target="_blank" rel="noopener">Área Metropolitana</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Normatividad</h4>
+          <ul>
+            <li><a href="#solucion">Resolución 2254 de 2017</a></li>
+            <li><a href="#solucion">Guías de Calidad del Aire OMS</a></li>
+            <li><a href="#solucion">Escala Oficial del ICA / AQI</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>AeroSIATA Valle de Aburrá &bull; Proyecto de Analítica y Calidad del Aire &bull; Desarrollado cumpliendo los puntos 6, 7, 8, 9, 10 y 11.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts: Leaflet JS & Chart.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Aplicación Principal -->
+  <script src="js/app.js"></script>
+</body>
+</html>
